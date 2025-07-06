@@ -1,26 +1,50 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Barcode Scanner</title>
-    <style>
-      body { text-align: center; font-family: Arial; }
-      video { width: 90%; margin-top: 20px; border: 2px solid #000; }
-    </style>
-  </head>
-  <body>
-    <h2>Scan Your Code</h2>
-    <video id="video" autoplay></video>
-    <script>
-      const video = document.getElementById('video');
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camera Scanner</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+    video {
+      width: 90%;
+      max-width: 500px;
+      border: 2px solid #333;
+      border-radius: 8px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Scan Your Code</h2>
+  <video id="video" autoplay playsinline></video>
 
-      // Ask for camera access
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then((stream) => {
-          video.srcObject = stream;
-        })
-        .catch((err) => {
-          alert("Camera permission denied or not supported: " + err.message);
+  <script>
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
         });
-    </script>
-  </body>
+        const videoElement = document.getElementById('video');
+        videoElement.srcObject = stream;
+      } catch (error) {
+        alert("Camera access failed: " + error.message);
+        console.error(error);
+      }
+    }
+
+    // Start the camera on page load
+    window.onload = startCamera;
+  </script>
+</body>
 </html>
