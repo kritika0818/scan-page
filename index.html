@@ -1,50 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Camera Scanner</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #f0f0f0;
-    }
-    video {
-      width: 90%;
-      max-width: 500px;
-      border: 2px solid #333;
-      border-radius: 8px;
-    }
-    h2 {
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
-<body>
-  <h2>Scan Your Code</h2>
-  <video id="video" autoplay playsinline></video>
-
-  <script>
-    async function startCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' }
-        });
-        const videoElement = document.getElementById('video');
-        videoElement.srcObject = stream;
-      } catch (error) {
-        alert("Camera access failed: " + error.message);
-        console.error(error);
+<html>
+  <head>
+    <title>Scan Your Code</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial;
+        margin: 0;
+        padding: 0;
       }
-    }
+      #reader {
+        width: 90%;
+        max-width: 500px;
+        margin: auto;
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Scan Your Code</h1>
+    <div id="reader"></div>
+    <p id="result" style="font-size: 18px; margin-top: 20px;"></p>
 
-    // Start the camera on page load
-    window.onload = startCamera;
-  </script>
-</body>
+    <script>
+      function onScanSuccess(decodedText, decodedResult) {
+        document.getElementById('result').innerText = `✅ Scanned: ${decodedText}`;
+        html5QrcodeScanner.clear(); // Stop scanning
+      }
+
+      const html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
+        /* verbose= */ false
+      );
+      html5QrcodeScanner.render(onScanSuccess);
+    </script>
+  </body>
 </html>
