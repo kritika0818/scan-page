@@ -140,17 +140,16 @@
         if (navigator.vibrate) navigator.vibrate(100);
         scanner.pause();
 
-        if (isValidUrl(decodedText)) {
-          if (confirm("Open this link?\n" + decodedText)) {
-            window.location.href = decodedText;
-          } else {
-            scanner.resume();
-          }
-        } else {
-          localStorage.setItem('scanned_code', decodedText);
-          alert("Scanned: " + decodedText);
-          setTimeout(() => scanner.resume(), 1500);
-        }
+        if (decodedText.startsWith("exp://")) {
+  window.location.href = decodedText;
+} else if (isValidUrl(decodedText)) {
+  if (confirm("Open this link?\n" + decodedText)) {
+    window.location.href = decodedText;
+  } else {
+    scanner.resume();
+  }
+}
+
       }
 
       function onScanFailure(error) {
