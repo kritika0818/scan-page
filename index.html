@@ -1,30 +1,26 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Custom QR/Barcode Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    #reader { width: 100%; height: 80vh; margin-top: 10px; }
-    body { font-family: sans-serif; text-align: center; }
-  </style>
-</head>
-<body>
-  <h2>Scan Your Code</h2>
-  <div id="reader"></div>
-  <script>
-    function onScanSuccess(decodedText, decodedResult) {
-      // Send message to React Native
-      window.ReactNativeWebView.postMessage(decodedText);
-    }
+  <head>
+    <title>Barcode Scanner</title>
+    <style>
+      body { text-align: center; font-family: Arial; }
+      video { width: 90%; margin-top: 20px; border: 2px solid #000; }
+    </style>
+  </head>
+  <body>
+    <h2>Scan Your Code</h2>
+    <video id="video" autoplay></video>
+    <script>
+      const video = document.getElementById('video');
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" }, // rear camera
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      onScanSuccess
-    ).catch(err => {
-      console.error("QR Code scan error", err);
-    });
-  </script>
-</body>
+      // Ask for camera access
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then((stream) => {
+          video.srcObject = stream;
+        })
+        .catch((err) => {
+          alert("Camera permission denied or not supported: " + err.message);
+        });
+    </script>
+  </body>
 </html>
