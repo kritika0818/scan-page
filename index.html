@@ -3,82 +3,117 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scan Your Code</title>
+    <title>Smart Barcode Scanner</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
-      body {
-        font-family: "Segoe UI", sans-serif;
+      body, html {
         margin: 0;
         padding: 0;
-        background-color: #f9f9f9;
-        color: #333;
-        text-align: center;
-      }
-
-      header {
-        background-color: #4caf50;
-        color: white;
-        padding: 16px;
-        font-size: 20px;
-        font-weight: bold;
+        height: 100%;
+        font-family: 'Segoe UI', sans-serif;
+        background: #000;
+        color: #fff;
       }
 
       #reader {
         width: 100%;
-        max-width: 400px;
-        margin: 20px auto;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        height: 100vh;
+      }
+
+      .controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+      }
+
+      .btn {
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        margin: 4px;
       }
 
       #result {
-        margin-top: 20px;
-        font-size: 18px;
-        color: #4caf50;
-        font-weight: bold;
-      }
-
-      .footer {
-        margin-top: 40px;
-        font-size: 14px;
-        color: #888;
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        max-width: 90%;
+        word-wrap: break-word;
+        z-index: 10;
       }
     </style>
   </head>
   <body>
-    <header>📷 Scan Your Barcode or QR</header>
     <div id="reader"></div>
-    <p id="result"></p>
+    <div class="controls">
+      <button class="btn" onclick="switchCamera()">🔄 Switch Camera</button>
+    </div>
+    <div id="result"></div>
 
     <script>
-      async function startScanner() {
-        try {
-          await navigator.mediaDevices.getUserMedia({ video: true });
+      let currentCamera = 'environment'; // back camera default
+      let scanner;
 
-          const html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader",
+      async function startScanner() {
+        scanner = new Html5Qrcode("reader");
+        try {
+          await scanner.start(
+            { facingMode: currentCamera },
             {
               fps: 10,
               qrbox: { width: 250, height: 250 },
-              aspectRatio: 1.0,
-              showTorchButtonIfSupported: true
             },
-            false
+            onScanSuccess
           );
-
-          html5QrcodeScanner.render((decodedText, decodedResult) => {
-            document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
-            html5QrcodeScanner.clear();
-          });
         } catch (err) {
-          alert("❌ Camera access denied or unavailable.\n\nError: " + err.message);
+          alert("Camera access denied or unavailable:\n" + err.message);
         }
+      }
+
+      function onScanSuccess(decodedText) {
+        document.getElementById('result').innerText = `✅ Scanned: ${decodedText}`;
+
+        // Pause scanner to avoid duplicates
+        scanner.pause();
+
+        // If it's a valid URL, prompt user
+        if (isValidUrl(decodedText)) {
+          if (confirm("Open this link?\n" + decodedText)) {
+            window.location.href = decodedText;
+          } else {
+            scanner.resume();
+          }
+        } else {
+          setTimeout(() => scanner.resume(), 1500);
+        }
+      }
+
+      function isValidUrl(str) {
+        try {
+          new URL(str);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      async function switchCamera() {
+        if (scanner) await scanner.stop();
+        currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+        startScanner();
       }
 
       startScanner();
     </script>
-
-    <div class="footer">Made with 💚 for fast mobile scanning</div>
   </body>
 </html>
