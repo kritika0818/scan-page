@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Smart Barcode Scanner</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
@@ -25,12 +25,12 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 250px;
-        height: 250px;
+        width: 300px;
+        height: 300px;
         transform: translate(-50%, -50%);
-        border: 2px solid rgba(255, 255, 255, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.3);
         border-radius: 8px;
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
         z-index: 5;
         overflow: hidden;
       }
@@ -39,13 +39,13 @@
         position: absolute;
         width: 100%;
         height: 2px;
-        background: red;
+        background: lime;
         animation: scan 2s infinite;
       }
 
       @keyframes scan {
         0% { top: 0%; }
-        50% { top: 90%; }
+        50% { top: 95%; }
         100% { top: 0%; }
       }
 
@@ -57,7 +57,7 @@
       }
 
       .btn {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.1);
         color: white;
         border: none;
         padding: 10px 14px;
@@ -72,14 +72,29 @@
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.6);
-        padding: 12px 20px;
-        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px 20px;
+        border-radius: 10px;
         font-size: 16px;
         color: #00ff99;
         max-width: 90%;
         word-wrap: break-word;
         z-index: 10;
+        text-align: center;
+      }
+
+      .loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        background: rgba(0,0,0,0.7);
+        padding: 10px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-size: 16px;
+        display: none;
       }
     </style>
   </head>
@@ -93,6 +108,7 @@
       <button class="btn" onclick="switchCamera()">🔄 Switch Camera</button>
     </div>
     <div id="result"></div>
+    <div class="loading" id="loading">📸 Switching camera...</div>
 
     <script>
       let currentCamera = 'environment';
@@ -104,22 +120,24 @@
           await scanner.start(
             { facingMode: currentCamera },
             {
-              fps: 10,
-              qrbox: { width: 250, height: 250 },
+              fps: 30,
+              qrbox: { width: 300, height: 300 },
+              aspectRatio: 1.777,
+              experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+              }
             },
-            onScanSuccess
+            onScanSuccess,
+            onScanFailure
           );
         } catch (err) {
-          alert("Camera access denied or unavailable:\n" + err.message);
+          alert("Camera error:\n" + err.message);
         }
       }
 
       function onScanSuccess(decodedText) {
-        document.getElementById('result').innerText = `✅ Scanned: ${decodedText}`;
-
-        // ✅ Haptic feedback
+        document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
         if (navigator.vibrate) navigator.vibrate(100);
-
         scanner.pause();
 
         if (isValidUrl(decodedText)) {
@@ -129,8 +147,14 @@
             scanner.resume();
           }
         } else {
+          localStorage.setItem('scanned_code', decodedText);
+          alert("Scanned: " + decodedText);
           setTimeout(() => scanner.resume(), 1500);
         }
+      }
+
+      function onScanFailure(error) {
+        // silent error
       }
 
       function isValidUrl(str) {
@@ -143,9 +167,19 @@
       }
 
       async function switchCamera() {
-        if (scanner) await scanner.stop();
-        currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
-        startScanner();
+        try {
+          document.getElementById("loading").style.display = "block";
+          if (scanner) {
+            await scanner.stop();
+            await scanner.clear();
+          }
+          currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+          await startScanner();
+        } catch (err) {
+          alert("Failed to switch camera:\n" + err.message);
+        } finally {
+          document.getElementById("loading").style.display = "none";
+        }
       }
 
       startScanner();
