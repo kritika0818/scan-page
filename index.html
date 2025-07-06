@@ -1,51 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scan Your Code</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
       body {
-        text-align: center;
-        font-family: Arial;
+        font-family: "Segoe UI", sans-serif;
         margin: 0;
         padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
+        text-align: center;
       }
+
+      header {
+        background-color: #4caf50;
+        color: white;
+        padding: 16px;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
       #reader {
-        width: 90%;
-        max-width: 500px;
-        margin: auto;
-        padding-top: 20px;
+        width: 100%;
+        max-width: 400px;
+        margin: 20px auto;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
+
       #result {
-        font-size: 18px;
         margin-top: 20px;
-        color: green;
+        font-size: 18px;
+        color: #4caf50;
+        font-weight: bold;
+      }
+
+      .footer {
+        margin-top: 40px;
+        font-size: 14px;
+        color: #888;
       }
     </style>
   </head>
   <body>
-    <h1>Scan Your Code</h1>
+    <header>📷 Scan Your Barcode or QR</header>
     <div id="reader"></div>
     <p id="result"></p>
 
     <script>
       async function startScanner() {
         try {
-          // Trigger camera permission request
           await navigator.mediaDevices.getUserMedia({ video: true });
 
-          // Start scanner
           const html5QrcodeScanner = new Html5QrcodeScanner(
             "reader",
             {
               fps: 10,
-              qrbox: { width: 250, height: 250 }
+              qrbox: { width: 250, height: 250 },
+              aspectRatio: 1.0,
+              showTorchButtonIfSupported: true
             },
             false
           );
 
           html5QrcodeScanner.render((decodedText, decodedResult) => {
-            document.getElementById('result').innerText = `✅ Scanned: ${decodedText}`;
+            document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
             html5QrcodeScanner.clear();
           });
         } catch (err) {
@@ -55,5 +78,7 @@
 
       startScanner();
     </script>
+
+    <div class="footer">Made with 💚 for fast mobile scanning</div>
   </body>
 </html>
