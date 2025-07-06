@@ -1,30 +1,43 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Custom QR/Barcode Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    #reader { width: 100%; height: 80vh; margin-top: 10px; }
-    body { font-family: sans-serif; text-align: center; }
-  </style>
-</head>
-<body>
-  <h2>Scan Your Code</h2>
-  <div id="reader"></div>
-  <script>
-    function onScanSuccess(decodedText, decodedResult) {
-      // Send message to React Native
-      window.ReactNativeWebView.postMessage(decodedText);
-    }
+  <head>
+    <title>Scan Your Code</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial;
+        margin: 0;
+        padding: 0;
+      }
+      #reader {
+        width: 90%;
+        max-width: 500px;
+        margin: auto;
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Scan Your Code</h1>
+    <div id="reader"></div>
+    <p id="result" style="font-size: 18px; margin-top: 20px;"></p>
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" }, // rear camera
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      onScanSuccess
-    ).catch(err => {
-      console.error("QR Code scan error", err);
-    });
-  </script>
-</body>
+    <script>
+      function onScanSuccess(decodedText, decodedResult) {
+        document.getElementById('result').innerText = `✅ Scanned: ${decodedText}`;
+        html5QrcodeScanner.clear(); // Stop scanning
+      }
+
+      const html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
+        /* verbose= */ false
+      );
+      html5QrcodeScanner.render(onScanSuccess);
+    </script>
+  </body>
 </html>
