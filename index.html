@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Custom QR/Barcode Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    #reader { width: 100%; height: 80vh; margin-top: 10px; }
+    body { font-family: sans-serif; text-align: center; }
+  </style>
+</head>
+<body>
+  <h2>Scan Your Code</h2>
+  <div id="reader"></div>
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      // Send message to React Native
+      window.ReactNativeWebView.postMessage(decodedText);
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" }, // rear camera
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onScanSuccess
+    ).catch(err => {
+      console.error("QR Code scan error", err);
+    });
+  </script>
+</body>
+</html>
