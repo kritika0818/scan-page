@@ -123,39 +123,40 @@
     let scanner;
 
     async function startScanner() {
-      scanner = new Html5Qrcode("reader");
-      try {
-        const devices = await Html5Qrcode.getCameras();
-        if (!devices || devices.length === 0) {
-          alert("🚫 No camera devices found.");
-          return;
-        }
-
-        const config = {
-          fps: 25,
-          qrbox: { width: 320, height: 320 },
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.UPC_A
-          ],
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true
-          }
-        };
-
-        await scanner.start(
-          { facingMode: currentCamera },
-          config,
-          onScanSuccess,
-          onScanFailure
-        );
-
-      } catch (err) {
-        alert("Camera error:\n" + (err.message || err));
-        console.error("Camera error:", err);
-      }
+  scanner = new Html5Qrcode("reader");
+  try {
+    const devices = await Html5Qrcode.getCameras();
+    if (!devices || devices.length === 0) {
+      alert("🚫 No camera devices found.");
+      return;
     }
+
+    // Prefer back camera if available
+    const backCamera = devices.find((d) =>
+      d.label.toLowerCase().includes("back")
+    );
+    const cameraId = backCamera ? backCamera.id : devices[0].id;
+
+    const config = {
+      fps: 25,
+      qrbox: { width: 320, height: 320 },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.UPC_A,
+      ],
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true,
+      },
+    };
+
+    await scanner.start(cameraId, config, onScanSuccess, onScanFailure);
+  } catch (err) {
+    alert("Camera error:\n" + (err.message || err));
+    console.error("Camera error:", err);
+  }
+}
+
 
     function onScanSuccess(decodedText) {
       document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
