@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Barcode Scanner</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
@@ -24,8 +25,8 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 500px;
-        height: 200px;
+        width: 300px;
+        height: 300px;
         transform: translate(-50%, -50%);
         border: 2px solid rgba(255, 255, 255, 0.3);
         border-radius: 8px;
@@ -114,32 +115,36 @@
       let scanner;
 
       async function startScanner() {
-        scanner = new Html5Qrcode("reader");
-
-        try {
-          await scanner.start(
-            { facingMode: { ideal: currentCamera } }, // ✅ "ideal" is more compatible
-            {
-              fps: 30,
-              qrbox: { width: 500, height: 200 },
-              aspectRatio: 16 / 9,
-              formatsToSupport: [
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.UPC_A,
-              ],
-              experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true
-              }
-            },
-            onScanSuccess,
-            onScanFailure
-          );
-        } catch (err) {
-          console.error('Camera error:', err);
-          alert("Camera error:\n" + err.message);
+  scanner = new Html5Qrcode("reader");
+  try {
+    await scanner.start(
+      {
+        facingMode: currentCamera,
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         }
-      }
+      },
+      {
+        fps: 30,
+        qrbox: { width: 360, height: 360 }, // enlarged scanning area
+        aspectRatio: 16 / 9,
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.UPC_A,
+        ],
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
+      },
+      onScanSuccess,
+      onScanFailure
+    );
+  } catch (err) {
+    alert("Camera error:\n" + err.message);
+  }
+}
 
       function onScanSuccess(decodedText) {
         document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
@@ -151,7 +156,7 @@
       }
 
       function onScanFailure(error) {
-        // Silent fail
+        // silent fail
       }
 
       async function switchCamera() {
@@ -164,7 +169,6 @@
           currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
           await startScanner();
         } catch (err) {
-          console.error('Switch camera error:', err);
           alert("Failed to switch camera:\n" + err.message);
         } finally {
           document.getElementById("loading").style.display = "none";
