@@ -1,176 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Barcode Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #000;
-      font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
-    }
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Barcode Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #000;
+        font-family: 'Segoe UI', sans-serif;
+        overflow: hidden;
+      }
 
-    #reader {
-      width: 100vw;
-      height: 100vh;
-      position: relative;
-    }
+      #reader {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+      }
 
-    .scan-box {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 500px;
-      height: 500px;
-      transform: translate(-50%, -50%);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 8px;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
-      z-index: 5;
-      overflow: hidden;
-    }
+      .scan-box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 500px;
+        height: 200px;
+        transform: translate(-50%, -50%);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+        z-index: 5;
+        overflow: hidden;
+      }
 
-    .scan-line {
-      position: absolute;
-      width: 100%;
-      height: 2px;
-      background: lime;
-      animation: scan 2s infinite;
-    }
+      .scan-line {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: lime;
+        animation: scan 2s infinite;
+      }
 
-    @keyframes scan {
-      0% { top: 0%; }
-      50% { top: 95%; }
-      100% { top: 0%; }
-    }
+      @keyframes scan {
+        0% { top: 0%; }
+        50% { top: 95%; }
+        100% { top: 0%; }
+      }
 
-    .controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 10;
-    }
+      .controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+      }
 
-    .btn {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      margin: 4px;
-    }
+      .btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        margin: 4px;
+      }
 
-    #result {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-size: 16px;
-      color: #00ff99;
-      max-width: 90%;
-      word-wrap: break-word;
-      z-index: 10;
-      text-align: center;
-    }
+      #result {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 16px;
+        color: #00ff99;
+        max-width: 90%;
+        word-wrap: break-word;
+        z-index: 10;
+        text-align: center;
+      }
 
-    .loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      background: rgba(0,0,0,0.7);
-      padding: 10px 20px;
-      border-radius: 8px;
-      z-index: 1000;
-      font-size: 16px;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-  <div id="reader">
-    <div class="scan-box">
-      <div class="scan-line"></div>
+      .loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        background: rgba(0,0,0,0.7);
+        padding: 10px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-size: 16px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="reader">
+      <div class="scan-box">
+        <div class="scan-line"></div>
+      </div>
     </div>
-  </div>
-  <div class="controls">
-    <button class="btn" onclick="switchCamera()">🔄 Switch Camera</button>
-  </div>
-  <div id="result"></div>
-  <div class="loading" id="loading">📸 Switching camera...</div>
+    <div class="controls">
+      <button class="btn" onclick="switchCamera()">🔄 Switch Camera</button>
+    </div>
+    <div id="result"></div>
+    <div class="loading" id="loading">📸 Switching camera...</div>
 
-  <script>
-    let currentCamera = 'environment';
-    let scanner;
+    <script>
+      let currentCamera = 'environment';
+      let scanner;
 
-    async function startScanner() {
-      scanner = new Html5Qrcode("reader");
+      async function startScanner() {
+        scanner = new Html5Qrcode("reader");
 
-      try {
-        await scanner.start(
-          { facingMode: { exact: currentCamera } }, // ✅ Correct way
-          {
-            fps: 60, // Higher FPS for faster detection
-            qrbox: { width: 500, height: 500 },
-            aspectRatio: 16 / 9,
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.CODE_128,
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.UPC_A,
-            ],
-            experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true
-            }
-          },
-          onScanSuccess,
-          onScanFailure
-        );
-      } catch (err) {
-        alert("Camera error:\n" + err.message);
-      }
-    }
-
-    function onScanSuccess(decodedText) {
-      document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
-      if (navigator.vibrate) navigator.vibrate(100);
-      scanner.pause();
-
-      // 👇 Update this link to your IP or expo address
-      const deepLink = `exp://192.168.1.7:8081/--/Cart?barcode=${encodeURIComponent(decodedText)}`;
-      window.location.href = deepLink;
-    }
-
-    function onScanFailure(error) {
-      // No-op on failure (optional)
-    }
-
-    async function switchCamera() {
-      try {
-        document.getElementById("loading").style.display = "block";
-        if (scanner) {
-          await scanner.stop();
-          await scanner.clear();
+        try {
+          await scanner.start(
+            { facingMode: { ideal: currentCamera } }, // ✅ "ideal" is more compatible
+            {
+              fps: 30,
+              qrbox: { width: 500, height: 200 },
+              aspectRatio: 16 / 9,
+              formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.UPC_A,
+              ],
+              experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+              }
+            },
+            onScanSuccess,
+            onScanFailure
+          );
+        } catch (err) {
+          console.error('Camera error:', err);
+          alert("Camera error:\n" + err.message);
         }
-        currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
-        await startScanner();
-      } catch (err) {
-        alert("Failed to switch camera:\n" + err.message);
-      } finally {
-        document.getElementById("loading").style.display = "none";
       }
-    }
 
-    startScanner();
-  </script>
-</body>
+      function onScanSuccess(decodedText) {
+        document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
+        if (navigator.vibrate) navigator.vibrate(100);
+        scanner.pause();
+
+        const deepLink = `exp://192.168.1.7:8081/--/Cart?barcode=${encodeURIComponent(decodedText)}`;
+        window.location.href = deepLink;
+      }
+
+      function onScanFailure(error) {
+        // Silent fail
+      }
+
+      async function switchCamera() {
+        try {
+          document.getElementById("loading").style.display = "block";
+          if (scanner) {
+            await scanner.stop();
+            await scanner.clear();
+          }
+          currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+          await startScanner();
+        } catch (err) {
+          console.error('Switch camera error:', err);
+          alert("Failed to switch camera:\n" + err.message);
+        } finally {
+          document.getElementById("loading").style.display = "none";
+        }
+      }
+
+      startScanner();
+    </script>
+  </body>
 </html>
