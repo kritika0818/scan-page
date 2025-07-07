@@ -110,83 +110,77 @@
     <div id="result"></div>
     <div class="loading" id="loading">📸 Switching camera...</div>
 
-   <script>
-  // ⬇️ Auto-redirect logic
-  const startupParams = new URLSearchParams(window.location.search);
-  const storeId = startupParams.get('storeId');
-  if (storeId) {
-    const expoDeepLink = `exp://192.168.1.7:8081/--/OtpEntry?storeId=${encodeURIComponent(storeId)}`;
-    window.location.href = expoDeepLink;
-  }
+    <script>
+      let currentCamera = 'environment';
+      let scanner;
 
-  let currentCamera = 'environment';
-  let scanner;
+      async function startScanner() {
+        scanner = new Html5Qrcode("reader");
+        try {
+          await scanner.start(
+            { facingMode: currentCamera },
+            {
+              fps: 30,
+              qrbox: { width: 300, height: 300 },
+              aspectRatio: 1.777,
+              experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+              }
+            },
+            onScanSuccess,
+            onScanFailure
+          );
+        } catch (err) {
+          alert("Camera error:\n" + err.message);
+        }
+      }
 
-  async function startScanner() {
-    scanner = new Html5Qrcode("reader");
-    try {
-      await scanner.start(
-        { facingMode: currentCamera },
-        {
-          fps: 30,
-          qrbox: { width: 300, height: 300 },
-          aspectRatio: 1.777,
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true
+      function onScanSuccess(decodedText) {
+        document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
+        if (navigator.vibrate) navigator.vibrate(100);
+        scanner.pause();
+
+        try {
+          const url = new URL(decodedText);
+          const storeId = url.searchParams.get("storeId");
+
+          if (storeId) {
+            const deepLink = `exp://192.168.1.7:8081/--/OtpEntry?storeId=${encodeURIComponent(storeId)}`;
+            window.location.href = deepLink;
+          } else {
+            if (confirm("Open scanned link?\n" + decodedText)) {
+              window.location.href = decodedText;
+            } else {
+              scanner.resume();
+            }
           }
-        },
-        onScanSuccess,
-        onScanFailure
-      );
-    } catch (err) {
-      alert("Camera error:\n" + err.message);
-    }
-  }
-
-  function onScanSuccess(decodedText) {
-    document.getElementById("result").innerText = `✅ Scanned: ${decodedText}`;
-    if (navigator.vibrate) navigator.vibrate(100);
-    scanner.pause();
-
-    if (decodedText.startsWith("exp://")) {
-      window.location.href = decodedText;
-    } else if (isValidUrl(decodedText)) {
-      if (confirm("Open this link?\n" + decodedText)) {
-        window.location.href = decodedText;
-      } else {
-        scanner.resume();
+        } catch (e) {
+          alert("Invalid QR Code or unsupported link.");
+          scanner.resume();
+        }
       }
-    }
-  }
 
-  function onScanFailure(error) {}
-  function isValidUrl(str) {
-    try {
-      new URL(str);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  async function switchCamera() {
-    try {
-      document.getElementById("loading").style.display = "block";
-      if (scanner) {
-        await scanner.stop();
-        await scanner.clear();
+      function onScanFailure(error) {
+        // silent fail
       }
-      currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
-      await startScanner();
-    } catch (err) {
-      alert("Failed to switch camera:\n" + err.message);
-    } finally {
-      document.getElementById("loading").style.display = "none";
-    }
-  }
 
-  startScanner();
-</script>
+      async function switchCamera() {
+        try {
+          document.getElementById("loading").style.display = "block";
+          if (scanner) {
+            await scanner.stop();
+            await scanner.clear();
+          }
+          currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+          await startScanner();
+        } catch (err) {
+          alert("Failed to switch camera:\n" + err.message);
+        } finally {
+          document.getElementById("loading").style.display = "none";
+        }
+      }
 
+      startScanner();
+    </script>
   </body>
 </html>
